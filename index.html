@@ -95,52 +95,41 @@
             box-shadow: inset 0 0 16px rgba(0,0,0,0.3);
         }
 
-        .wheel-segment {
+        .wheel-svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .wheel-center {
             position: absolute;
-            width: 50%;
-            height: 50%;
-            transform-origin: 100% 100%;
-            left: 50%;
             top: 50%;
-            clip-path: polygon(0 0, 100% 0, 100% 100%);
-            overflow: hidden;
-        }
-
-        .segment-content {
-            position: absolute;
             left: 50%;
-            top: 20%;
-            transform: translateX(-50%) rotate(90deg);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            color: white;
-            font-weight: 800;
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.6);
-            font-size: 0.85rem;
-            text-align: center;
-            width: 100px;
-        }
-
-        .segment-icon {
-            font-size: 1.5rem;
-            margin-bottom: 3px;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #FF6B6B, #FF4757);
+            border: 4px solid #FFD700;
+            box-shadow: 
+                0 4px 12px rgba(0,0,0,0.3),
+                inset 0 2px 4px rgba(255,255,255,0.3);
+            z-index: 5;
         }
 
         .pointer {
             position: absolute;
             top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 15;
-            pointer-events: none;
+            left: calc(50% - 110px);
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            z-index: 10;
             filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.3));
         }
 
         .pointer svg {
-            width: 40px;
-            height: 40px;
+            width: 100%;
+            height: 100%;
         }
 
         .center-button {
@@ -155,6 +144,7 @@
             border: 4px solid #FFD700;
             cursor: pointer;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             font-size: 0.9rem;
@@ -433,7 +423,6 @@
             50% { opacity: 1; transform: scale(1.2); }
         }
 
-        /* 桌面端适配 */
         @media (min-width: 768px) {
             body {
                 padding: 24px;
@@ -452,7 +441,6 @@
 
             .wheel-section {
                 flex: 1;
-                order: 1;
             }
 
             .wheel-wrapper {
@@ -467,14 +455,10 @@
                 left: 25px;
             }
 
-            .segment-content {
-                font-size: 0.95rem;
-                width: 120px;
-                top: 18%;
-            }
-
-            .segment-icon {
-                font-size: 1.7rem;
+            .pointer {
+                left: calc(50% - 135px);
+                width: 24px;
+                height: 24px;
             }
 
             .center-button {
@@ -483,14 +467,8 @@
                 font-size: 1rem;
             }
 
-            .pointer svg {
-                width: 50px;
-                height: 50px;
-            }
-
             .edit-section {
                 flex: 1;
-                order: 2;
                 padding: 30px;
             }
 
@@ -513,16 +491,26 @@
                 <div class="wheel-outer">
                     <div class="stars" id="stars"></div>
                 </div>
-                <div class="wheel" id="wheel"></div>
+                <svg class="wheel" id="wheel">
+                    <defs>
+                        <filter id="glow">
+                            <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                            <feMerge>
+                                <feMergeNode in="coloredBlur"/>
+                                <feMergeNode in="SourceGraphic"/>
+                            </feMerge>
+                        </filter>
+                    </defs>
+                </svg>
                 <div class="pointer">
-                    <svg viewBox="0 0 50 50">
+                    <svg viewBox="0 0 24 24">
                         <defs>
                             <linearGradient id="pointerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" style="stop-color:#FFD700"/>
-                                <stop offset="100%" style="stop-color:#FF6347"/>
+                                <stop offset="0%" style="stop-color:#FF6B6B"/>
+                                <stop offset="100%" style="stop-color:#FF4757"/>
                             </linearGradient>
                         </defs>
-                        <polygon points="5,25 25,5 25,15 45,25 25,35 25,45" fill="url(#pointerGrad)" stroke="#333" stroke-width="2"/>
+                        <polygon points="24,12 0,6 0,18" fill="url(#pointerGrad)" stroke="#333" stroke-width="1"/>
                     </svg>
                 </div>
                 <button class="center-button" id="spinBtn" onclick="spinWheel()">开始<br>抽奖!</button>
@@ -590,28 +578,63 @@
 
         function renderWheel() {
             const wheel = document.getElementById('wheel');
-            wheel.innerHTML = '';
+            const wheelSize = wheel.offsetWidth || 260;
+            const centerX = wheelSize / 2;
+            const centerY = wheelSize / 2;
+            const radius = wheelSize / 2;
             
+            let svgContent = `
+                <defs>
+                    <filter id="glow">
+                        <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                        <feMerge>
+                            <feMergeNode in="coloredBlur"/>
+                            <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                    </filter>
+                </defs>
+            `;
+
             const segmentAngle = 360 / items.length;
-            const skewAngle = 90 - segmentAngle;
 
             items.forEach((item, index) => {
-                const segment = document.createElement('div');
-                segment.className = 'wheel-segment';
-                segment.style.transform = `rotate(${index * segmentAngle}deg) skewY(-${skewAngle}deg)`;
-                segment.style.background = item.color;
+                const startAngle = (index * segmentAngle - 90) * Math.PI / 180;
+                const endAngle = ((index + 1) * segmentAngle - 90) * Math.PI / 180;
+                
+                const x1 = centerX + radius * Math.cos(startAngle);
+                const y1 = centerY + radius * Math.sin(startAngle);
+                const x2 = centerX + radius * Math.cos(endAngle);
+                const y2 = centerY + radius * Math.sin(endAngle);
+                
+                const largeArcFlag = segmentAngle > 180 ? 1 : 0;
+                
+                const pathData = `M ${centerX} ${centerY} L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2} Z`;
+                
+                const midAngle = (startAngle + endAngle) / 2;
+                const textRadius = radius * 0.7;
+                const textX = centerX + textRadius * Math.cos(midAngle);
+                const textY = centerY + textRadius * Math.sin(midAngle);
+                
+                const textRotate = (midAngle * 180 / Math.PI);
 
-                const content = document.createElement('div');
-                content.className = 'segment-content';
-                content.style.transform = `skewY(${skewAngle}deg) rotate(${segmentAngle / 2 - 90}deg)`;
-                content.innerHTML = `
-                    <span class="segment-icon">${item.icon || ''}</span>
-                    <span>${item.text}</span>
+                svgContent += `
+                    <path d="${pathData}" fill="${item.color}" filter="url(#glow)"/>
+                    <text x="${textX}" y="${textY}" text-anchor="middle" dominant-baseline="middle" 
+                          fill="white" font-weight="800" font-size="${wheelSize * 0.06}" 
+                          style="text-shadow: 1px 1px 3px rgba(0,0,0,0.6);"
+                          transform="rotate(${textRotate}, ${textX}, ${textY})">
+                        ${item.icon}
+                    </text>
+                    <text x="${textX}" y="${textY + wheelSize * 0.07}" text-anchor="middle" dominant-baseline="middle" 
+                          fill="white" font-weight="800" font-size="${wheelSize * 0.05}" 
+                          style="text-shadow: 1px 1px 3px rgba(0,0,0,0.6);"
+                          transform="rotate(${textRotate}, ${textX}, ${textY + wheelSize * 0.07})">
+                        ${item.text}
+                    </text>
                 `;
-
-                segment.appendChild(content);
-                wheel.appendChild(segment);
             });
+
+            wheel.innerHTML = svgContent;
         }
 
         function updateItemText(index, value) {
@@ -668,7 +691,6 @@
             const segmentAngle = 360 / items.length;
             const randomIndex = Math.floor(Math.random() * items.length);
             const extraSpins = 5 + Math.floor(Math.random() * 5);
-            // 指针指向左侧，需要调整角度计算
             const targetAngle = extraSpins * 360 + (randomIndex * segmentAngle + segmentAngle / 2);
             currentRotation += targetAngle;
 
@@ -676,28 +698,11 @@
             wheel.style.transition = 'transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99)';
             wheel.style.transform = `rotate(${currentRotation}deg)`;
 
-            createSparkles();
-
             setTimeout(() => {
                 showResult(items[randomIndex]);
                 isSpinning = false;
                 btn.disabled = false;
             }, 4000);
-        }
-
-        function createSparkles() {
-            const wrapper = document.querySelector('.wheel-wrapper');
-            for (let i = 0; i < 20; i++) {
-                setTimeout(() => {
-                    const sparkle = document.createElement('div');
-                    sparkle.className = 'sparkle';
-                    sparkle.innerHTML = '✨';
-                    sparkle.style.left = Math.random() * 100 + '%';
-                    sparkle.style.top = Math.random() * 100 + '%';
-                    wrapper.appendChild(sparkle);
-                    setTimeout(() => sparkle.remove(), 600);
-                }, i * 100);
-            }
         }
 
         function showResult(item) {
@@ -734,6 +739,8 @@
             createStars();
             renderItemList();
             renderWheel();
+
+            window.addEventListener('resize', renderWheel);
         });
     </script>
 </body>
