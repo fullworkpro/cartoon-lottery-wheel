@@ -93,38 +93,25 @@
             overflow: hidden;
             transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);
             box-shadow: inset 0 0 16px rgba(0,0,0,0.3);
+            transform-origin: center center;
         }
 
-        .wheel-svg {
+        .wheel svg {
             width: 100%;
             height: 100%;
+            display: block;
         }
 
-        .wheel-center {
+        .pointer {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             width: 80px;
             height: 80px;
-            border-radius: 50%;
-            background: linear-gradient(145deg, #FF6B6B, #FF4757);
-            border: 4px solid #FFD700;
-            box-shadow: 
-                0 4px 12px rgba(0,0,0,0.3),
-                inset 0 2px 4px rgba(255,255,255,0.3);
-            z-index: 5;
-        }
-
-        .pointer {
-            position: absolute;
-            top: 50%;
-            left: calc(50% - 110px);
-            transform: translateY(-50%);
-            width: 20px;
-            height: 20px;
             z-index: 10;
             filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.3));
+            pointer-events: none;
         }
 
         .pointer svg {
@@ -456,9 +443,8 @@
             }
 
             .pointer {
-                left: calc(50% - 135px);
-                width: 24px;
-                height: 24px;
+                width: 100px;
+                height: 100px;
             }
 
             .center-button {
@@ -503,14 +489,15 @@
                     </defs>
                 </svg>
                 <div class="pointer">
-                    <svg viewBox="0 0 24 24">
+                    <svg viewBox="0 0 80 80">
                         <defs>
-                            <linearGradient id="pointerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" style="stop-color:#FF6B6B"/>
-                                <stop offset="100%" style="stop-color:#FF4757"/>
+                            <linearGradient id="pointerGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+                                <stop offset="0%" style="stop-color:#FFD700"/>
+                                <stop offset="100%" style="stop-color:#FF6347"/>
                             </linearGradient>
                         </defs>
-                        <polygon points="24,12 0,6 0,18" fill="url(#pointerGrad)" stroke="#333" stroke-width="1"/>
+                        <polygon points="40,5 55,40 25,40" fill="url(#pointerGrad)" stroke="#333" stroke-width="2"/>
+                        <circle cx="40" cy="40" r="15" fill="none"/>
                     </svg>
                 </div>
                 <button class="center-button" id="spinBtn" onclick="spinWheel()">开始<br>抽奖!</button>
@@ -583,6 +570,8 @@
             const centerY = wheelSize / 2;
             const radius = wheelSize / 2;
             
+            wheel.setAttribute('viewBox', `0 0 ${wheelSize} ${wheelSize}`);
+            
             let svgContent = `
                 <defs>
                     <filter id="glow">
@@ -615,19 +604,17 @@
                 const textX = centerX + textRadius * Math.cos(midAngle);
                 const textY = centerY + textRadius * Math.sin(midAngle);
                 
-                const textRotate = (midAngle * 180 / Math.PI);
+                const textRotate = (midAngle * 180 / Math.PI) + 90;
 
                 svgContent += `
                     <path d="${pathData}" fill="${item.color}" filter="url(#glow)"/>
                     <text x="${textX}" y="${textY}" text-anchor="middle" dominant-baseline="middle" 
                           fill="white" font-weight="800" font-size="${wheelSize * 0.06}" 
-                          style="text-shadow: 1px 1px 3px rgba(0,0,0,0.6);"
                           transform="rotate(${textRotate}, ${textX}, ${textY})">
                         ${item.icon}
                     </text>
                     <text x="${textX}" y="${textY + wheelSize * 0.07}" text-anchor="middle" dominant-baseline="middle" 
                           fill="white" font-weight="800" font-size="${wheelSize * 0.05}" 
-                          style="text-shadow: 1px 1px 3px rgba(0,0,0,0.6);"
                           transform="rotate(${textRotate}, ${textX}, ${textY + wheelSize * 0.07})">
                         ${item.text}
                     </text>
@@ -691,7 +678,7 @@
             const segmentAngle = 360 / items.length;
             const randomIndex = Math.floor(Math.random() * items.length);
             const extraSpins = 5 + Math.floor(Math.random() * 5);
-            const targetAngle = extraSpins * 360 + (randomIndex * segmentAngle + segmentAngle / 2);
+            const targetAngle = extraSpins * 360 + (360 - randomIndex * segmentAngle - segmentAngle / 2);
             currentRotation += targetAngle;
 
             const wheel = document.getElementById('wheel');
