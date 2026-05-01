@@ -108,7 +108,7 @@
             left: 50%;
             transform: translate(-50%, -50%);
             width: 80px;
-            height: 80px;
+            height: 140px;
             z-index: 10;
             filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.3));
             pointer-events: none;
@@ -444,7 +444,7 @@
 
             .pointer {
                 width: 100px;
-                height: 100px;
+                height: 175px;
             }
 
             .center-button {
@@ -489,15 +489,9 @@
                     </defs>
                 </svg>
                 <div class="pointer">
-                    <svg viewBox="0 0 80 80">
-                        <defs>
-                            <linearGradient id="pointerGrad" x1="0%" y1="100%" x2="0%" y2="0%">
-                                <stop offset="0%" style="stop-color:#FFD700"/>
-                                <stop offset="100%" style="stop-color:#FF6347"/>
-                            </linearGradient>
-                        </defs>
-                        <polygon points="40,5 55,40 25,40" fill="url(#pointerGrad)" stroke="#333" stroke-width="2"/>
-                        <circle cx="40" cy="40" r="15" fill="none"/>
+                    <svg viewBox="0 0 80 140">
+                        <polygon points="40,5 75,70 5,70" fill="#FFD700" stroke="#333" stroke-width="2"/>
+                        <polygon points="40,15 65,70 15,70" fill="#FFEC8B"/>
                     </svg>
                 </div>
                 <button class="center-button" id="spinBtn" onclick="spinWheel()">开始<br>抽奖!</button>
@@ -600,7 +594,7 @@
                 const pathData = `M ${centerX} ${centerY} L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2} Z`;
                 
                 const midAngle = (startAngle + endAngle) / 2;
-                const textRadius = radius * 0.7;
+                const textRadius = radius * 0.65;
                 const textX = centerX + textRadius * Math.cos(midAngle);
                 const textY = centerY + textRadius * Math.sin(midAngle);
                 
@@ -609,13 +603,8 @@
                 svgContent += `
                     <path d="${pathData}" fill="${item.color}" filter="url(#glow)"/>
                     <text x="${textX}" y="${textY}" text-anchor="middle" dominant-baseline="middle" 
-                          fill="white" font-weight="800" font-size="${wheelSize * 0.06}" 
+                          fill="white" font-weight="800" font-size="${wheelSize * 0.065}" 
                           transform="rotate(${textRotate}, ${textX}, ${textY})">
-                        ${item.icon}
-                    </text>
-                    <text x="${textX}" y="${textY + wheelSize * 0.07}" text-anchor="middle" dominant-baseline="middle" 
-                          fill="white" font-weight="800" font-size="${wheelSize * 0.05}" 
-                          transform="rotate(${textRotate}, ${textX}, ${textY + wheelSize * 0.07})">
                         ${item.text}
                     </text>
                 `;
